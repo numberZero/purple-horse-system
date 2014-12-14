@@ -1,5 +1,9 @@
+#include "desctables.h"
 #include "memory.h"
 #include "port.h"
+#include "terminal/console.hxx"
+
+extern SGDTEntry gdt[];
 
 struct __attribute__((packed)) term_sym
 {
@@ -23,9 +27,14 @@ void clearscreenex(char ch, unsigned char color)
 		terminal[i] = s;
 }
 
-void clearscreen()
+extern "C" void clearscreen()
 {
 	clearscreenex(' ', 0x07);
+}
+
+extern "C" void __cxa_pure_virtual()
+{
+	die("Pure virtual function call");
 }
 
 struct term_sym* getrealchar(long x, long y)
@@ -127,14 +136,35 @@ void putstringexpand(char const* str)
 	updatecursor();
 }
 
-int main(void *mboot_ptr)
+static const char hexdigits[17] = "0123456789ABCDEF";
+
+extern "C" int kernel_main(void *mboot_ptr) __attribute__((noreturn));
+
+extern "C" int kernel_main(void *mboot_ptr)
 //int main(struct multiboot *mboot_ptr)
 {
-	clearscreenex('Z', 0x0A);
+	KTerminal term;
+	KTerminal::terminal = &term; // yes term is local, but actually kernel_main never returns, so that’s OK
+	KConsole con;
+	KConsole::console = &con;
+	con.setStyle({LightGreen, Black});
+	clearscreenex(' ', 0x00);
+	con.writeLine("Console works");
+	init_descriptor_tables();
+	con.writeLine("Descriptor tables initialized");
+	con.write(hexdigits[gdt[1].access_byte >> 4]);
+	con.write(hexdigits[gdt[1].access_byte & 15]);
+	con.write(' ');
+	con.write(hexdigits[gdt[1].granularity_byte >> 4]);
+	con.write(hexdigits[gdt[1].granularity_byte & 15]);
+	con.write(' ');
 	while(1)
 	{
-		setcursorpos(0, 0);
-		putstringexpand("Hello world!\n123456789\n\t90 degrees\nxx\t.0.al.\t=)\n:D nZero\n");
+//		con.setStyle({});
+//		con.setCursorPos(TermPos(0, 0));
+		//putstringexpand("Hello world!\n123456789\n\t90 degrees\nxx\t.0.al.\t=)\n:D nZero\n");
+		//halt();
 	}
-	return 0xDEADBABA;
+	die("kernel_main must not return");
+	//return 0xDEADBABA;
 }

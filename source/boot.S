@@ -33,19 +33,19 @@ mboot:
   .long  start                  # Точка входа в ядро (первоначальный EIP).
 
 .section bootstrap
-.global start                   # Точка входа в ядро.
-.extern main                    # Это точка входа в ваш код на C
+.global start
+.global halt
+.extern kernel_main
 
 start:
   push %ebx                   # Загрузка указателя на место размещения заголовка multiboot
 
-  # Выполнение ядра:
-  cli                         # Отключаем прерывания.
+  cli
   call clearscreen
   movw $0x0F34, 0x000B8002
 
-  call main                   # вызываем нашу функцию main().
+  call kernel_main
 
-die:
+halt:
   hlt
-  jmp die
+  jmp halt
