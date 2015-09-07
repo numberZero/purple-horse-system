@@ -11,7 +11,8 @@ void halt() __attribute__((noreturn));
 }
 #endif
 
-static void kprint(char const *text, long N)
+static void _die(char const *text, long N) __attribute__((noreturn));
+static void _die(char const *text, long N)
 {
 	struct t
 	{
@@ -23,17 +24,9 @@ static void kprint(char const *text, long N)
 		buf[i].c = text[i];
 		buf[i].s = 0x0C;
 	}
-}
-
-template <typename T>
-static void die(T text) __attribute__((noreturn));
-
-template <typename T>
-static void die(T text)
-{
-	kprint(text, sizeof(text));
 	halt();
 }
+#define	die(message)	_die(message, sizeof(message))
 
 template <typename T>
 static inline T const& EnsureRange(T const& value, T const& min, T const& max)

@@ -56,15 +56,25 @@ void MemMappedTerminal::setCursorPos(TermPos const& pos)
 
 void MemMappedTerminal::scrollVertically(long lines)
 {
+	if(!lines)
+		return;
+	if(pitch == width)
+	{
+		if(lines > 0)
+			memmove(getLine(0), getLine(lines), width * (height - lines) * sizeof(Symbol));
+		else
+			memmove(getLine(-lines), getLine(0), width * (height + lines) * sizeof(Symbol));
+		return;
+	}
 	if(lines > 0) // scrolling up
 	{
 		for(long dest = 0; dest < height - lines; ++dest)
-			memcpy(get(TermPos(0, dest)), get(TermPos(0, dest + lines)), sizeof(Symbol) * width);
+			memcpy(getLine(dest), getLine(dest + lines), sizeof(Symbol) * width);
 	}
 	else // scrolling down
 	{
 		for(long dest = height - 1; dest >= -lines; --dest)
-			memcpy(get(TermPos(0, dest)), get(TermPos(0, dest + lines)), sizeof(Symbol) * width);
+			memcpy(getLine(dest), getLine(dest + lines), sizeof(Symbol) * width);
 	}
 }
 

@@ -1,6 +1,7 @@
 #include "console.hxx"
 
 KConsole *KConsole::console = nullptr;
+IConsole *kout;
 
 // Console
 
@@ -98,14 +99,58 @@ void Console::setStyle(Style s)
 	style = s;
 }
 
-void Console::write(char ch)
+void Console::writeChar(char ch)
 {
 	putCharEx(ch, style);
 }
 
-void Console::write(char const *string)
+void Console::writeValue(char const *string)
 {
 	putStringEx(string, style);
+}
+
+void Console::writeValue(long number, int base, int full_width)
+{
+	static const char digits[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+	if((base < 2) || (base >= sizeof(digits)))
+	{
+		writeValue("<base is not correct: ");
+		writeValue(base, 10);
+		writeValue(">");
+		return;
+	}
+	/*if(!number)
+	{
+		writeChar('0');
+		return;
+	}*/
+	if(number < 0)
+	{
+		writeChar('-');
+		number = -number;
+		--full_width;
+	}
+	long temp{number};
+	long factor{1};
+	int width{1};
+	while(temp >= base)
+	{
+		temp /= base;
+		factor *= base;
+		++width;
+	}
+	for(; full_width > width; --full_width)
+	{
+		writeChar('0');
+	}
+	while(width)
+	{
+		int digit = number / factor;
+		number %= factor;
+		factor /= base;
+		writeChar(digits[digit]);
+		--width;
+	}
 }
 
 void Console::writeLine()
@@ -115,6 +160,6 @@ void Console::writeLine()
 
 void Console::writeLine(char const *string)
 {
-	write(string);
+	writeValue(string);
 	writeLine();
 }

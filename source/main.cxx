@@ -4,6 +4,7 @@
 #include "terminal/console.hxx"
 
 extern SGDTEntry gdt[];
+extern SIDTEntry idt[];
 
 struct __attribute__((packed)) term_sym
 {
@@ -36,79 +37,7 @@ extern "C" void __cxa_pure_virtual()
 {
 	die("Pure virtual function call");
 }
-
-struct term_sym* getrealchar(long x, long y)
-{
-	return terminal + x + y * term_sx;
-}
-
-void setchar(char ch, long x, long y)
-{
-	getrealchar(x, y)->code = ch;
-}
-
-void setcharex(char ch, unsigned char color, long x, long y)
-{
-	struct term_sym* rc = getrealchar(x, y);
-	rc->code = ch;
-	rc->color = color;
-}
-
-void updatecursor()
-{
-	u2 l = term_cy * 80 + term_cx;
-	outb(0x3D4, 14);
-	outb(0x3D5, l >> 8);
-	outb(0x3D4, 15);
-	outb(0x3D5, l);
-}
-
-void setcursorpos(long x, long y)
-{
-	term_cx = x;
-	term_cy = y;
-	updatecursor();
-}
-
-void scroll()
-{
-	memmove(terminal, terminal + term_sx, term_sx * (term_sy - 1) * 2);
-	--term_cy;
-	updatecursor();
-}
-
-void newline()
-{
-	term_cx = 0;
-	if(++term_cy >= term_sy)
-		scroll();
-	else
-		updatecursor();
-}
-
-void putcharnc(char ch)
-{
-	setchar(ch, term_cx, term_cy);
-	if(++term_cx >= term_sx)
-		newline();
-}
-
-void putchar(char ch)
-{
-	setchar(ch, term_cx, term_cy);
-	if(++term_cx >= term_sx)
-		newline();
-	else
-		updatecursor();
-}
-
-void putstring(char const* str)
-{
-	while(*str)
-		putcharnc(*(str++));
-	updatecursor();
-}
-
+/*
 void putstringexpand(char const* str)
 {
 	while(*str)
@@ -135,11 +64,33 @@ void putstringexpand(char const* str)
 	}
 	updatecursor();
 }
-
-static const char hexdigits[17] = "0123456789ABCDEF";
+*/
 
 extern "C" int kernel_main(void *mboot_ptr) __attribute__((noreturn));
-
+/*
+extern "C" unsigned char isr_1;
+extern "C" unsigned char isr_2;
+extern "C" unsigned char isr_8;
+extern "C" unsigned char isr_10;
+*/
+extern "C" void *code;
+extern "C" void *data;
+extern "C" void *bss;
+extern "C" void *heap;
+extern "C" void *getStackPointer();
+extern "C" void *getCodePointer();
+/*
+void PrintInterruptHandler(long num, unsigned char *isr)
+{
+	kout->write("Interrupt handler (", num, "):");
+	for(unsigned char *v(isr); *v != 0x90; ++v)
+	{
+		kout->write(" ");
+		kout->writeValue(*v, 16, 2);
+	}
+	kout->writeLine();
+}
+*/
 extern "C" int kernel_main(void *mboot_ptr)
 //int main(struct multiboot *mboot_ptr)
 {
@@ -149,19 +100,46 @@ extern "C" int kernel_main(void *mboot_ptr)
 	KConsole::console = &con;
 	con.setStyle({LightGreen, Black});
 	clearscreenex(' ', 0x00);
-	con.writeLine("Console works");
+	kout = &con;
+	kout->writeLine("Console works");
 	init_descriptor_tables();
-	con.writeLine("Descriptor tables initialized");
-	con.write(hexdigits[gdt[1].access_byte >> 4]);
-	con.write(hexdigits[gdt[1].access_byte & 15]);
-	con.write(' ');
-	con.write(hexdigits[gdt[1].granularity_byte >> 4]);
-	con.write(hexdigits[gdt[1].granularity_byte & 15]);
-	con.write(' ');
+	for(long i = 0; i < 5; ++i)
+	{
+		kout->write("Segment ", i, " flags: ");
+		kout->writeValue(gdt[i].access_byte, 16);
+		kout->write(" ");
+		kout->writeValue(gdt[i].granularity_byte, 16);
+		kout->writeLine();
+	}
+	kout->writeLine(mboot_ptr);
+/*	for(long i = 0; i < 32; ++i)
+	{
+		kout->write("Interrupt ", i, " flags: ");
+		kout->writeValue(idt[i].flags, 16);
+		kout->write(", segment: ");
+		kout->writeValue(idt[i].segment, 16);
+		kout->write(", handler: ", idt[i].GetBase());
+		kout->writeLine();
+	}
+	PrintInterruptHandler(1, &isr_1);
+	PrintInterruptHandler(2, &isr_2);
+	PrintInterruptHandler(8, &isr_8);
+	PrintInterruptHandler(10, &isr_10);*/
+	kout->writeLine("Code section: ", &code);
+	kout->writeLine("Data section: ", &data);
+	kout->writeLine("BSS section: ", &bss);
+	kout->writeLine("Heap section: ", &heap);
+	kout->writeLine("Stack pointer: ", getStackPointer());
+	kout->writeLine("Code pointer: ", getCodePointer());
+	asm volatile ("int $3");
+	asm volatile ("int $32");
+	kout->writeLine("Entering interrupt-driven mode...");
 	while(1)
 	{
-//		con.setStyle({});
-//		con.setCursorPos(TermPos(0, 0));
+		asm volatile ("hlt");
+		kout->writeLine("hlt returns");
+//		kout->setStyle({});
+//		kout->setCursorPos(TermPos(0, 0));
 		//putstringexpand("Hello world!\n123456789\n\t90 degrees\nxx\t.0.al.\t=)\n:D nZero\n");
 		//halt();
 	}

@@ -59,6 +59,8 @@ private:
 	long pitch;
 	TermPos cursor;
 	
+	inline Symbol *getLine(long y);
+	
 public:
 	MemMappedTerminal(void *_base, long _width, long _height, long _pitch = 0);
 	Symbol *get() override;
@@ -92,6 +94,11 @@ public:
 	KTerminal();
 	void setCursorPos(TermPos const& pos);
 };
+
+Symbol *MemMappedTerminal::getLine(long y)
+{
+	return data + y * pitch;
+}
 
 long ITerminal::getCursorX() const
 {

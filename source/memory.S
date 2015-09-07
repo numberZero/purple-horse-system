@@ -44,7 +44,7 @@ skip1:
 	popl %edi
 ENDFUNCTION(memsetw)
 
-FUNCTION(memsetd) # void *memsetd(void *s, int c, size_t n);
+FUNCTION(memsetl) # void *memsetd(void *s, int c, size_t n);
 	pushl %edi
 	movl 8(%ebp), %edi # %edi = s
 	movl 12(%ebp), %eax # %eax = c
@@ -53,7 +53,7 @@ FUNCTION(memsetd) # void *memsetd(void *s, int c, size_t n);
 	rep stosl
 	movl 8(%ebp), %eax # %eax = s
 	popl %edi
-ENDFUNCTION(memsetd)
+ENDFUNCTION(memsetl)
 
 ALIAS(memcpy, memmove)
 /*
