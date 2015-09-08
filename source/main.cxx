@@ -2,6 +2,7 @@
 #include "memory.h"
 #include "port.h"
 #include "terminal/console.hxx"
+#include "codegen/instructions.hxx"
 
 extern SGDTEntry gdt[];
 extern SIDTEntry idt[];

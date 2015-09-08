@@ -3,6 +3,7 @@
 #include "memory.h"
 #include "port.h"
 #include "terminal/console.hxx"
+#include "codegen/instructions.hxx"
 #define	GDT_ITEMS	5
 #define	IDT_ITEMS	256
 
@@ -23,6 +24,9 @@ extern "C"
 	void interrupt_handler(registers_t regs);
 	void irq_handler(registers_t regs);
 	
+	extern u1 const irq_handler_wrapper[];
+	extern u1 const interrupt_handler_wrapper[];
+	
 	extern interrupt_handler_t interrupt_handler_0, interrupt_handler_1, interrupt_handler_2, interrupt_handler_3, interrupt_handler_4, interrupt_handler_5, interrupt_handler_6, interrupt_handler_7;
 	extern interrupt_handler_t interrupt_handler_8, interrupt_handler_9, interrupt_handler_10, interrupt_handler_11, interrupt_handler_12, interrupt_handler_13, interrupt_handler_14, interrupt_handler_15;
 	extern interrupt_handler_t interrupt_handler_16, interrupt_handler_17, interrupt_handler_18, interrupt_handler_19, interrupt_handler_20, interrupt_handler_21, interrupt_handler_22, interrupt_handler_23;
@@ -31,10 +35,44 @@ extern "C"
 	extern interrupt_handler_t irq_handler_8, irq_handler_9, irq_handler_10, irq_handler_11, irq_handler_12, irq_handler_13, irq_handler_14;
 }
 
+packed_struct SInterruptHandler
+{
+	SInterruptHandler(u1 irq_id) :
+		cli(codegen::FlagInterrupt::Opcode::disallow),
+		pushec(irq_id),
+		pushid(irq_id + 32),
+		handle(irq_handler_wrapper)
+	{
+	}
+	
+	SInterruptHandler(u1 int_id, bool ec_passed) :
+		cli(codegen::FlagInterrupt::Opcode::disallow),
+		pushec(0),
+		pushid(int_id),
+		handle(interrupt_handler_wrapper)
+	{
+		if(ec_passed)
+			pushec.disable();
+	}
+	
+private:
+	codegen::FlagInterrupt cli;
+	codegen::Optional<codegen::PushByte> pushec;
+	codegen::PushByte pushid;
+	codegen::JumpLong handle;
+	codegen::Nop nop;
+};
+
+static_assert(sizeof(SInterruptHandler) == 11, "Alignment?!");
+
+extern SInterruptHandler sys_ints[32];
+extern SInterruptHandler sys_irqs[16];
+
 // Internal function prototypes.
 static void init_gdt();
 static void init_idt();
 static void initialize_pic();
+static void start_timer();
 
 SGDTEntry gdt[GDT_ITEMS];
 SGDTPointer gdt_ptr;
@@ -45,6 +83,7 @@ void init_descriptor_tables()
 {
 	init_gdt();
 	init_idt();
+	start_timer();
 }
 
 static void init_gdt()
@@ -74,77 +113,22 @@ static void init_idt()
 	idt_ptr.base = idt;
 
 	memset(&idt, 0, sizeof(idt));
-// CPU exception handlers
-	idt[0].Setup(&interrupt_handler_0, 0x0008, RingKernel);
-	idt[1].Setup(&interrupt_handler_1, 0x0008, RingKernel);
-	idt[2].Setup(&interrupt_handler_2, 0x0008, RingKernel);
-	idt[3].Setup(&interrupt_handler_3, 0x0008, RingKernel);
-	idt[4].Setup(&interrupt_handler_4, 0x0008, RingKernel);
-	idt[5].Setup(&interrupt_handler_5, 0x0008, RingKernel);
-	idt[6].Setup(&interrupt_handler_6, 0x0008, RingKernel);
-	idt[7].Setup(&interrupt_handler_7, 0x0008, RingKernel);
-	idt[8].Setup(&interrupt_handler_8, 0x0008, RingKernel);
-	idt[9].Setup(&interrupt_handler_9, 0x0008, RingKernel);
-	idt[10].Setup(&interrupt_handler_10, 0x0008, RingKernel);
-	idt[11].Setup(&interrupt_handler_11, 0x0008, RingKernel);
-	idt[12].Setup(&interrupt_handler_12, 0x0008, RingKernel);
-	idt[13].Setup(&interrupt_handler_13, 0x0008, RingKernel);
-	idt[14].Setup(&interrupt_handler_14, 0x0008, RingKernel);
-	idt[15].Setup(&interrupt_handler_15, 0x0008, RingKernel);
-	idt[16].Setup(&interrupt_handler_16, 0x0008, RingKernel);
-	idt[17].Setup(&interrupt_handler_17, 0x0008, RingKernel);
-	idt[18].Setup(&interrupt_handler_18, 0x0008, RingKernel);
-	idt[19].Setup(&interrupt_handler_19, 0x0008, RingKernel);
-	idt[20].Setup(&interrupt_handler_20, 0x0008, RingKernel);
-	idt[21].Setup(&interrupt_handler_21, 0x0008, RingKernel);
-	idt[22].Setup(&interrupt_handler_22, 0x0008, RingKernel);
-	idt[23].Setup(&interrupt_handler_23, 0x0008, RingKernel);
-	idt[24].Setup(&interrupt_handler_24, 0x0008, RingKernel);
-	idt[25].Setup(&interrupt_handler_25, 0x0008, RingKernel);
-	idt[26].Setup(&interrupt_handler_26, 0x0008, RingKernel);
-	idt[27].Setup(&interrupt_handler_27, 0x0008, RingKernel);
-	idt[28].Setup(&interrupt_handler_28, 0x0008, RingKernel);
-	idt[29].Setup(&interrupt_handler_29, 0x0008, RingKernel);
-	idt[30].Setup(&interrupt_handler_30, 0x0008, RingKernel);
-	idt[31].Setup(&interrupt_handler_31, 0x0008, RingKernel);
+// Interrupt handlers
+	for(int k = 0; k != 32; ++k)
+	{
+		new(&sys_ints[k]) SInterruptHandler(k, (k >= 8) && (k <= 13) && (k != 9));
+		idt[k].Setup(&sys_ints[k], 0x0008, RingKernel);
+	}
 // IRQ handlers
-	idt[32].Setup(&irq_handler_0, 0x0008, RingKernel);
-	idt[33].Setup(&irq_handler_1, 0x0008, RingKernel);
-	idt[34].Setup(&irq_handler_2, 0x0008, RingKernel);
-	idt[35].Setup(&irq_handler_3, 0x0008, RingKernel);
-	idt[36].Setup(&irq_handler_4, 0x0008, RingKernel);
-	idt[37].Setup(&irq_handler_5, 0x0008, RingKernel);
-	idt[38].Setup(&irq_handler_6, 0x0008, RingKernel);
-	idt[39].Setup(&irq_handler_7, 0x0008, RingKernel);
-	idt[40].Setup(&irq_handler_8, 0x0008, RingKernel);
-	idt[41].Setup(&irq_handler_9, 0x0008, RingKernel);
-	idt[42].Setup(&irq_handler_10, 0x0008, RingKernel);
-	idt[43].Setup(&irq_handler_11, 0x0008, RingKernel);
-	idt[44].Setup(&irq_handler_12, 0x0008, RingKernel);
-	idt[45].Setup(&irq_handler_13, 0x0008, RingKernel);
-	idt[46].Setup(&irq_handler_14, 0x0008, RingKernel);
-	kout->writeLine("IDT initialized");
-	
+	for(int k = 0; k != 16; ++k)
+	{
+		new(&sys_irqs[k]) SInterruptHandler(k);
+		idt[k + 32].Setup(&sys_irqs[k], 0x0008, RingKernel);
+	}
+	kout->writeLine("IDT prepared");
 	initialize_pic();
-	
 	idt_flush(&idt_ptr);
 	kout->writeLine("IDT loaded");
-	outb(0x43, 0b00110010);
-	outb(0x40, 0);
-	outb(0x40, 0);
-	u2 divisor = 1193180 / 19;
-
-	// Send the command byte.
-	outb(0x43, 0x36);
-
-	// Divisor has to be sent byte-wise, so split here into upper/lower bytes.
-	u1 l = (u1)(divisor & 0xFF);
-	u1 h = (u1)( (divisor>>8) & 0xFF );
-
-	// Send the frequency divisor.
-	outb(0x40, l);
-	outb(0x40, h);
-	kout->writeLine("Timer started");
 }
 
 static void initialize_pic()
@@ -163,6 +147,26 @@ static void initialize_pic()
 	kout->writeLine("PIC initialized");
 }
 
+static void start_timer()
+{
+	outb(0x43, 0b00110010);
+	outb(0x40, 0);
+	outb(0x40, 0);
+	u2 divisor = 1193180 / 19;
+
+	// Send the command byte.
+	outb(0x43, 0x36);
+
+	// Divisor has to be sent byte-wise, so split here into upper/lower bytes.
+	u1 l = (u1)(divisor & 0xFF);
+	u1 h = (u1)( (divisor>>8) & 0xFF );
+
+	// Send the frequency divisor.
+	outb(0x40, l);
+	outb(0x40, h);
+	kout->writeLine("Timer started");
+}
+
 void interrupt_handler(registers_t regs)
 {
 	kout->writeLine("Interrupt ", regs.int_no, " received");
@@ -170,7 +174,8 @@ void interrupt_handler(registers_t regs)
 
 void irq_handler(registers_t regs)
 {
-	kout->writeLine("IRQ ", regs.err_code, " interrupt ", regs.int_no, " received");
+	if(regs.int_no != 32)
+		kout->writeLine("IRQ ", regs.err_code, " interrupt ", regs.int_no, " received");
 	if(regs.err_code == 1)
 	{
 		u1 v = inb(0x60);
