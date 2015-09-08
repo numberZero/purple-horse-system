@@ -6,7 +6,7 @@ IConsole *kout;
 // Console
 
 Console::Console(ITerminal *_terminal):
-	terminal(_terminal), style()
+	terminal(_terminal), style(Color::LightGray, Color::Black)
 {
 }
 
@@ -22,14 +22,24 @@ Symbol *Console::get(TermPos const& pos)
 	return terminal->get(pos);
 }
 
+void Console::clear(char c)
+{
+	terminal->clear(c);
+}
+
+void Console::clearEx(Symbol s)
+{
+	terminal->clearEx(s);
+}
+
 void Console::clearLine(long y, char c)
 {
 	terminal->clearLine(y, c);
 }
 
-void Console::clearLineEx(long y, char c, u1 style)
+void Console::clearLineEx(long y, Symbol s)
 {
-	terminal->clearLineEx(y, c, style);
+	terminal->clearLineEx(y, s);
 }
 
 void Console::scrollVertically(long lines)
@@ -52,9 +62,9 @@ void Console::putChar(char c)
 	terminal->putChar(c);
 }
 
-void Console::putCharEx(char c, u1 style)
+void Console::putCharEx(Symbol s)
 {
-	terminal->putCharEx(c, style);
+	terminal->putCharEx(s);
 }
 
 void Console::putString(char const *line)

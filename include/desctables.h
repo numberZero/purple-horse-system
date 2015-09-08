@@ -15,7 +15,7 @@ enum ERing
 	RingUser = 3
 };
 
-struct SGDTEntry
+packed_struct SGDTEntry
 {
 	enum EDescriptorType : bool
 	{
@@ -43,14 +43,14 @@ struct SGDTEntry
 	u2 length_low;		// The lower 16 bits of the limit.
 	u2 base_low;		// The lower 16 bits of the base.
 	u1 base_middle;		// The next 8 bits of the base.
-	union
+	packed_union
 	{
-		struct
+		packed_struct
 		{
 			u1 access_byte;		// Access flags, determine what ring this segment can be used in.
 			u1 granularity_byte;
-		} __attribute__((packed));
-		struct
+		};
+		packed_struct
 		{
 			ESegmentType segtype: 4;
 			EDescriptorType desctype: 1;
@@ -62,8 +62,8 @@ struct SGDTEntry
 			EZero zero: 1;
 			EOperandSize opsize: 1;
 			EGranularity granularity: 1;
-		} __attribute__((packed));
-	} __attribute__((packed));
+		};
+	};
 	u1 base_high;		// The last 8 bits of the base.
 
 	inline void SetLength(u4 length);
@@ -71,19 +71,19 @@ struct SGDTEntry
 	inline void SetBase(void *base);
 	inline void Setup(u4 base, u4 length, ERing r, EDescriptorType dt, ESegmentType st, EGranularity g = GranularityKByte, EOperandSize os = Bits32);
 	inline void Clear();
-} __attribute__((packed));
+};
 
 static_assert(sizeof(SGDTEntry) == 8, "Unsupported compiler: bit fields must be packed");
 
-struct SGDTPointer
+packed_struct SGDTPointer
 {
 	u2 limit;
 	SGDTEntry *base;
-} __attribute__((packed));
+};
 
 static_assert(sizeof(SGDTPointer) == 6, "Unsupported compiler: unexpected padding detected");
 
-struct SIDTEntry
+packed_struct SIDTEntry
 {
 	enum EReserved
 	{
@@ -93,16 +93,16 @@ struct SIDTEntry
 	u2 base_low;
 	u2 segment;
 	u1 zero;
-	union
+	packed_union
 	{
 		u1 flags;
-		struct
+		packed_struct
 		{
 			EReserved reserved: 5;
 			ERing caller: 2;
 			bool present: 1;
-		} __attribute__((packed));
-	} __attribute__((packed));
+		};
+	};
 	u2 base_high;
 
 	inline void* GetBase();
@@ -110,15 +110,15 @@ struct SIDTEntry
 	inline void SetBase(void *base);
 	inline void Setup(void *base, u2 s, ERing r);
 	inline void Clear();
-} __attribute__((packed));
+};
 
 static_assert(sizeof(SIDTEntry) == 8, "Unsupported compiler: bit fields must be packed");
 
-struct SIDTPointer
+packed_struct SIDTPointer
 {
 	u2 limit;
 	SIDTEntry *base;
-} __attribute__((packed));
+};
 
 static_assert(sizeof(SIDTPointer) == 6, "Unsupported compiler: unexpected padding detected");
 

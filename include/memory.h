@@ -1,9 +1,6 @@
 #pragma once
 #include "types.h"
 
-typedef u4 size_t;
-typedef s4 ssize_t;
-
 #ifdef __cplusplus
 extern "C"
 {

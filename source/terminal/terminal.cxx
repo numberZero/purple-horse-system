@@ -78,6 +78,22 @@ void MemMappedTerminal::scrollVertically(long lines)
 	}
 }
 
+void MemMappedTerminal::clear(char c)
+{
+	for(long y = 0; y < height; ++y)
+		for(long x = 0; x < width; ++x)
+			get(TermPos(x, y))->symbol = c;
+}
+
+void MemMappedTerminal::clearEx(Symbol s)
+{
+	if(pitch == width)
+		memsetw(data, s, width * height);
+	else
+		for(long y = 0; y < height; ++y)
+			memsetw(getLine(y), s, width);
+}
+
 void MemMappedTerminal::clearLine(long y, char c)
 {
 	if(y < 0)
@@ -88,14 +104,13 @@ void MemMappedTerminal::clearLine(long y, char c)
 		get(TermPos(x, y))->symbol = c;
 }
 
-void MemMappedTerminal::clearLineEx(long y, char c, u1 style)
+void MemMappedTerminal::clearLineEx(long y, Symbol s)
 {
 	if(y < 0)
 		return;
 	if(y >= height)
 		return;
-	for(long x = 0; x < width; ++x)
-		get(TermPos(x, y))->value = Symbol(c, style).value;
+	memsetw(getLine(y), s, width);
 }
 
 void MemMappedTerminal::skipChar()
@@ -128,9 +143,9 @@ void MemMappedTerminal::putChar(char c)
 	skipChar();
 }
 
-void MemMappedTerminal::putCharEx(char c, u1 style)
+void MemMappedTerminal::putCharEx(Symbol s)
 {
-	*get() = Symbol(c, style);
+	*get() = s;
 	skipChar();
 }
 
