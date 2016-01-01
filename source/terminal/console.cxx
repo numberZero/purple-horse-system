@@ -3,6 +3,37 @@
 KConsole *KConsole::console = nullptr;
 IConsole *kout;
 
+// CDummyConsole
+
+Style CDummyConsole::getStyle() const
+{
+	return{Color::LightGray, Color::Black};
+}
+
+void CDummyConsole::setStyle(Style style)
+{
+}
+
+void CDummyConsole::writeChar(char ch)
+{
+}
+
+void CDummyConsole::writeLine(const char* string)
+{
+}
+
+void CDummyConsole::writeLine()
+{
+}
+
+void CDummyConsole::writeValue(long int number, int base, int width)
+{
+}
+
+void CDummyConsole::writeValue(const char* string)
+{
+}
+
 // Console
 
 Console::Console(ITerminal *_terminal):
@@ -122,7 +153,7 @@ void Console::writeValue(char const *string)
 void Console::writeValue(long number, int base, int full_width)
 {
 	static const char digits[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-	if((base < 2) || (base >= sizeof(digits)))
+	if((base < 2) || (base >= static_cast<int>(sizeof(digits))))
 	{
 		writeValue("<base is not correct: ");
 		writeValue(base, 10);

@@ -8,6 +8,7 @@ set(sources
 	main.cxx
 	terminal/terminal.cxx
 	terminal/console.cxx
+	memory/kmalloc.cxx
 	desctables.cxx
 )
 

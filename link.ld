@@ -1,20 +1,24 @@
-/* link.ld -- скрипт компоновщика ядра - проследите за тем, чтобы */
-/*            это выполнялось в правильном месте.  */
-/*            Исходный файл был взят из руководства по разработке ядра Bran's  */
-/*            Kernel Development: http://www.osdever.net/bkerndev/index.php. */
-
 ENTRY(start)
+/* STARTUP(boot.S.o) */
+OUTPUT_FORMAT(elf32-i386)
+
 SECTIONS
 {
-	.header 0x200 :
+	.header 0x500 :
 	{
 		*(header)
 		. = ALIGN(4096);
 	}
-
+	
+	.stack 0x00010000 :
+	{
+ 		stack_segment = .; stack_l = .;
+		. = 0x00070000;
+ 		stack = .; stack_h = .;
+	}
+	
 	.text 0x00100000 :
 	{
-/*		stack = .; _stack = .; __stack = .;*/
 		code = .; _code = .; __code = .;
 		*(bootstrap)
 		*(.text)

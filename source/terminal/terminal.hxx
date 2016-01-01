@@ -28,8 +28,8 @@ public:
 	
 	inline long getCursorX() const;
 	inline long getCursorY() const;
-	inline long setCursorX(long x);
-	inline long setCursoY(long y);
+	inline void setCursorX(long x);
+	inline void setCursorY(long y);
 	inline void clearEx(char c, u1 style);
 	inline void clearLineEx(long y, char c, u1 style);
 	inline void putCharEx(char c, u1 style);
@@ -101,14 +101,14 @@ long ITerminal::getCursorY() const
 	return getCursorPos().y;
 }
 
-long ITerminal::setCursorX(long x)
+void ITerminal::setCursorX(long int x)
 {
 	TermPos pos(getCursorPos());
 	pos.x = x;
 	setCursorPos(pos);
 }
 
-long ITerminal::setCursoY(long y)
+void ITerminal::setCursorY(long int y)
 {
 	TermPos pos(getCursorPos());
 	pos.y = y;

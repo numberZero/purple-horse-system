@@ -1,9 +1,10 @@
-#include "desctables.h"
+#include "desctables.hxx"
 #include "types.h"
 #include "memory.h"
 #include "port.h"
 #include "terminal/console.hxx"
 #include "codegen/instructions.hxx"
+#include "memory/kmalloc.hxx"
 #define	GDT_ITEMS	5
 #define	IDT_ITEMS	256
 
@@ -26,25 +27,10 @@ extern "C"
 	
 	extern u1 const irq_handler_wrapper[];
 	extern u1 const interrupt_handler_wrapper[];
-	
-	extern interrupt_handler_t interrupt_handler_0, interrupt_handler_1, interrupt_handler_2, interrupt_handler_3, interrupt_handler_4, interrupt_handler_5, interrupt_handler_6, interrupt_handler_7;
-	extern interrupt_handler_t interrupt_handler_8, interrupt_handler_9, interrupt_handler_10, interrupt_handler_11, interrupt_handler_12, interrupt_handler_13, interrupt_handler_14, interrupt_handler_15;
-	extern interrupt_handler_t interrupt_handler_16, interrupt_handler_17, interrupt_handler_18, interrupt_handler_19, interrupt_handler_20, interrupt_handler_21, interrupt_handler_22, interrupt_handler_23;
-	extern interrupt_handler_t interrupt_handler_24, interrupt_handler_25, interrupt_handler_26, interrupt_handler_27, interrupt_handler_28, interrupt_handler_29, interrupt_handler_30, interrupt_handler_31;
-	extern interrupt_handler_t irq_handler_0, irq_handler_1, irq_handler_2, irq_handler_3, irq_handler_4, irq_handler_5, irq_handler_6, irq_handler_7;
-	extern interrupt_handler_t irq_handler_8, irq_handler_9, irq_handler_10, irq_handler_11, irq_handler_12, irq_handler_13, irq_handler_14;
 }
 
 packed_struct SInterruptHandler
 {
-	SInterruptHandler(u1 irq_id) :
-		cli(codegen::FlagInterrupt::Opcode::disallow),
-		pushec(irq_id),
-		pushid(irq_id + 32),
-		handle(irq_handler_wrapper)
-	{
-	}
-	
 	SInterruptHandler(u1 int_id, bool ec_passed) :
 		cli(codegen::FlagInterrupt::Opcode::disallow),
 		pushec(0),
@@ -65,8 +51,35 @@ private:
 
 static_assert(sizeof(SInterruptHandler) == 11, "Alignment?!");
 
-extern SInterruptHandler sys_ints[32];
-extern SInterruptHandler sys_irqs[16];
+packed_struct SIRQHandler
+{
+	SIRQHandler(u1 irq_id) :
+		cli(codegen::FlagInterrupt::Opcode::disallow),
+		pushirq(irq_id),
+		pushint(irq_id + 32),
+		handle(irq_handler_wrapper)
+	{
+	}
+	
+private:
+	codegen::FlagInterrupt cli;
+	codegen::PushByte pushirq;
+	codegen::PushByte pushint;
+	codegen::JumpLong handle;
+	codegen::Nop nop;
+};
+
+static_assert(sizeof(SIRQHandler) == 11, "Alignment?!");
+
+class CMemoryHandling
+{
+};
+
+class CInterruptHandling
+{
+};
+
+CInterruptHandling* ih;
 
 // Internal function prototypes.
 static void init_gdt();
@@ -116,15 +129,16 @@ static void init_idt()
 // Interrupt handlers
 	for(int k = 0; k != 32; ++k)
 	{
-		new(&sys_ints[k]) SInterruptHandler(k, (k >= 8) && (k <= 13) && (k != 9));
-		idt[k].Setup(&sys_ints[k], 0x0008, RingKernel);
+		idt[k].Setup(new(undeletable) SInterruptHandler(k, (k >= 8) && (k <= 13) && (k != 9)), 0x0008, RingKernel);
 	}
 // IRQ handlers
 	for(int k = 0; k != 16; ++k)
 	{
-		new(&sys_irqs[k]) SInterruptHandler(k);
-		idt[k + 32].Setup(&sys_irqs[k], 0x0008, RingKernel);
+		idt[k + 32].Setup(new(undeletable) SIRQHandler(k), 0x0008, RingKernel);
 	}
+	
+	idt[0x40].Setup(new(undeletable) SInterruptHandler(0x40, false), 0x0008, RingKernel);
+	
 	kout->writeLine("IDT prepared");
 	initialize_pic();
 	idt_flush(&idt_ptr);

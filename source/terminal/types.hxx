@@ -41,7 +41,7 @@ packed_struct Style
 	Style() = default;
 	Style(u1 s): style(s) {}
 	Style(Color fg, Color bg): foreground(fg), background(bg) {}
-	Style& operator= (u1 s) { style = s; }
+	Style& operator= (u1 s) { style = s; return *this; }
 	operator u1() { return style; }
 };
 

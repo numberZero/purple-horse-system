@@ -100,4 +100,16 @@ public:
 	}
 };
 
+class CDummyConsole: virtual public IConsole
+{
+public:
+	Style getStyle() const override;
+	void setStyle(Style style) override;
+	void writeChar(char ch) override;
+	void writeValue(char const *string) override;
+	void writeValue(long number, int base = 10, int width = 1) override;
+	void writeLine() override;
+	void writeLine(char const *string) override;
+};
+
 extern IConsole *kout;

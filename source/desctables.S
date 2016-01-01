@@ -25,7 +25,6 @@
 	idt_flush:
 		movl 4(%esp), %eax
 		lidt (%eax)
-		sti
 		ret
 
 	.global interrupt_handler_wrapper
@@ -79,12 +78,3 @@
 		addl $8, %esp
 		sti
 		iret
-
-# CPU interrupts
-	.global sys_ints
-	sys_ints:
-		.skip 32*11
-	
-	.global sys_irqs
-	sys_irqs:
-		.skip 16*11
