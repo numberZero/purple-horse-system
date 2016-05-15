@@ -4,26 +4,27 @@ OUTPUT_FORMAT(elf32-i386)
 
 SECTIONS
 {
-	.header 0x500 :
+	.text 0x500 :
 	{
+		code = .; _code = .; __code = .;
 		*(header)
 		. = ALIGN(4096);
 	}
-	
+
 	.stack 0x00010000 :
 	{
- 		stack_segment = .; stack_l = .;
+		stack_segment = .; stack_l = .;
 		. = 0x00070000;
- 		stack = .; stack_h = .;
+		stack = .; stack_h = .;
 	}
-	
+
 	.text 0x00100000 :
 	{
 		code = .; _code = .; __code = .;
 		*(bootstrap)
 		*(.text)
 	}
-	
+
 	. = ALIGN(4096);
 	.data :
 	{
@@ -38,7 +39,7 @@ SECTIONS
 		bss = .; _bss = .; __bss = .;
 		*(.bss)
 	}
-	
+
 	. = ALIGN(4096);
 	.heap :
 	{
