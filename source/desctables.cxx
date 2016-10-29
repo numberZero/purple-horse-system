@@ -19,9 +19,6 @@ CInterruptHandling* ih;
 */
 // Internal function prototypes.
 void init_gdt();
-void init_idt();
-void initialize_pic();
-void start_timer();
 
 SGDTEntry gdt[GDT_ITEMS];
 SGDTPointer gdt_ptr;
@@ -29,8 +26,6 @@ SGDTPointer gdt_ptr;
 void init_descriptor_tables()
 {
 	init_gdt();
-	init_idt();
-	start_timer();
 }
 
 void init_gdt()

@@ -13,7 +13,7 @@ packed_struct SIDTEntry
 	u1 zero;
 	packed_union
 	{
-		u1 flags = 0;
+		u1 flags;
 		packed_struct
 		{
 			EReserved reserved: 5;

@@ -5,8 +5,8 @@ extern "C"
 #endif
 void halt() __attribute__((noreturn));
 
-static void _die(char const *text, long N) __attribute__((noreturn));
-static void _die(char const *text, long N)
+static inline void _die(char const *text, long N) __attribute__((noreturn));
+static inline void _die(char const *text, long N)
 {
 	struct t
 	{

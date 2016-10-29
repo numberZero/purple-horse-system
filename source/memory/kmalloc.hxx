@@ -35,11 +35,11 @@ class undeletable_t
 
 static undeletable_t undeletable;
 
-inline void* operator new(size_t size, undeletable_t = undeletable)
+inline void* operator new(size_t size, undeletable_t = undeletable) noexcept
 {
 	return KAllocator::allocator->alloc(size);
 }
 
-inline void operator delete(void*, undeletable_t = undeletable)
+inline void operator delete(void*, undeletable_t = undeletable) noexcept
 {
 }

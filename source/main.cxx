@@ -5,9 +5,10 @@
 #include "terminal/console.hxx"
 #include "codegen/instructions.hxx"
 #include "memory/kmalloc.hxx"
+#include "interrupts/handling.hxx"
 
 extern SGDTEntry gdt[];
-extern SIDTEntry idt[];
+extern void start_timer();
 
 extern "C" void __cxa_pure_virtual()
 {
@@ -68,6 +69,10 @@ extern "C" int __attribute__((noreturn)) kernel_main(SMultibootInfo *mboot)
 	kout->writeLine("End of sections: ", &end);
 	kout->writeLine("Stack pointer: ", getStackPointer());
 	kout->writeLine("Code pointer: ", getCodePointer());
+	kout->writeLine("Initializing interrupt handling...");
+	interrupt_handling_facility = new(undeletable) CInterruptHandlingFacility();
+	kout->writeLine("Starting system timer...");
+	start_timer();
 	kout->writeLine("Entering interrupt-driven mode...");
 	asm volatile ("sti");
 	for(;;)

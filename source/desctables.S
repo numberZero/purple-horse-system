@@ -20,7 +20,7 @@
 		ljmp $8, $.flush
 	.flush:
 		ret
-	
+/*
 	.global idt_flush
 	idt_flush:
 		movl 4(%esp), %eax
@@ -76,3 +76,4 @@
 		popal
 		addl $8, %esp
 		iret
+*/

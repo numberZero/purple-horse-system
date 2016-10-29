@@ -8,6 +8,8 @@
 #include "memory/kmalloc.hxx"
 #define	IDT_ITEMS	256
 
+CInterruptHandlingFacility *interrupt_handling_facility;
+
 using interrupt_handler_t = void *;
 
 typedef struct registers
@@ -22,9 +24,6 @@ extern "C"
 {
 	void idt_flush(SIDTPointer *);
 	void interrupt_handler(registers_t regs);
-	void irq_handler(registers_t regs);
-
-	extern u1 const irq_handler_wrapper[];
 	extern u1 const interrupt_handler_wrapper[];
 }
 
@@ -70,7 +69,7 @@ packed_struct SIRQHandler
 		cli(codegen::FlagInterrupt::Opcode::disallow),
 		pushirq(irq_id),
 		pushint(irq_id + 32),
-		handle(irq_handler_wrapper)
+		handle(interrupt_handler_wrapper)
 	{
 	}
 
@@ -83,12 +82,9 @@ private:
 
 static_assert(sizeof(SIRQHandler) == 10, "Alignment?!");
 
-SIDTEntry idt[IDT_ITEMS];
-SIDTPointer idt_ptr;
-
 void initialize_pic();
 
-void init_idt()
+CInterruptHandlingFacility::CInterruptHandlingFacility()
 {
 	kout->writeLine("Initializing IDT...");
 	idt_ptr.limit = sizeof(idt) - 1;
@@ -156,8 +152,15 @@ void start_timer()
 void interrupt_handler(registers_t regs)
 {
 	kout->writeLine("Interrupt ", regs.int_no, " received");
+	if((regs.int_no >= 32) && (regs.int_no < 48))
+	{
+		kout->writeLine("IRQ ", regs.err_code, " interrupt ", regs.int_no, " received");
+		if(regs.int_no >= 40)
+			outb(0xA0, 0x20);
+		outb(0x20, 0x20);
+	}
 }
-
+/*
 void irq_handler(registers_t regs)
 {
 	if(regs.int_no != 32)
@@ -177,3 +180,4 @@ void irq_handler(registers_t regs)
 		outb(0xA0, 0x20);
 	outb(0x20, 0x20);
 }
+*/
