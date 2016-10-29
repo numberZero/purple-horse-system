@@ -13,6 +13,7 @@
 	interrupt_handler_wrapper:
 		pushal
 
+		xorl %eax, %eax
 		movw %ds, %ax
 		pushl %eax
 

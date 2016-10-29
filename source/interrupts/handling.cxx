@@ -100,35 +100,15 @@ CInterruptHandlingFacility::CInterruptHandlingFacility()
 	kout->writeLine("IDT loaded");
 }
 
+void CInterruptHandlingFacility::handle_interrupt(int id, u4 error, u2& data_segment, SCommonRegisters& registers, SInterruptRegisters& context)
+{
+	kout->writeLine("Interrupt ", id, " received");
+}
+
 void interrupt_handler(SInterruptHandlerArgument &regs)
 {
-	kout->writeLine("Interrupt ", regs.int_no, " received");
 	if((regs.int_no >= 32) && (regs.int_no < 48))
-	{
-		kout->writeLine("IRQ ", regs.err_code, " interrupt ", regs.int_no, " received");
-		if(regs.int_no >= 40)
-			outb(0xA0, 0x20);
-		outb(0x20, 0x20);
-	}
+		irq_handling_facility->handle_irq(regs.err_code, regs.ds, regs.registers, regs.context);
+	else
+		interrupt_handling_facility->handle_interrupt(regs.int_no, regs.err_code, regs.ds, regs.registers, regs.context);
 }
-/*
-void irq_handler(registers_t regs)
-{
-	if(regs.int_no != 32)
-		kout->writeLine("IRQ ", regs.err_code, " interrupt ", regs.int_no, " received");
-	if(regs.err_code == 1)
-	{
-		u1 v = inb(0x60);
-		kout->writeLine("Keyboard input: ", v);
-		if(v == 1) // escape
-		{
-			kout->setStyle({LightRed});
-			kout->writeLine("Keyboard halt");
-			die("System halted by user");
-		}
-	}
-	if(regs.int_no >= 40)
-		outb(0xA0, 0x20);
-	outb(0x20, 0x20);
-}
-*/

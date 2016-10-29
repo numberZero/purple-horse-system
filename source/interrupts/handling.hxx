@@ -2,12 +2,26 @@
 #include "types.h"
 #include "table.hxx"
 
+packed_struct SCommonRegisters
+{
+	u4 edi, esi, ebp, esp, ebx, edx, ecx, eax;
+};
+
+packed_struct SInterruptRegisters
+{
+	u4 eip, cs, eflags, esp, ss;
+};
+
 struct SInterruptHandlerArgument
 {
-	u4 ds; // Data segment selector
-	u4 edi, esi, ebp, esp, ebx, edx, ecx, eax; // Pushed by pusha.
-	u4 int_no, err_code; // Interrupt number and error code (if applicable)
-	u4 eip, cs, eflags, useresp, ss; // Pushed by the processor automatically.
+	union
+	{
+		u2 ds;
+		u4 ds_place;
+	};
+	SCommonRegisters registers;
+	u4 int_no, err_code;
+	SInterruptRegisters context;
 };
 
 class CInterruptHandlingFacility
@@ -21,6 +35,7 @@ private:
 
 public:
 	CInterruptHandlingFacility();
+	void handle_interrupt(int id, u4 error, u2 &data_segment, SCommonRegisters &registers, SInterruptRegisters &context);
 };
 
 extern CInterruptHandlingFacility *interrupt_handling_facility;
