@@ -33,7 +33,7 @@ packed_struct FlagInterrupt
 		disallow = cli,
 		allow = sti
 	} opcode = Opcode::cli;
-	
+
 	FlagInterrupt() = default;
 	FlagInterrupt(Opcode op) :
 		opcode(op)
@@ -58,7 +58,7 @@ packed_struct PushByte
 		pushl = 0x6A
 	} opcode = Opcode::pushl;
 	u1 data = 0;
-	
+
 	PushByte() = default;
 	PushByte(u1 byte) :
 		data(byte)
@@ -74,7 +74,7 @@ packed_struct JumpLong
 		jmp = 0xE9
 	} opcode = Opcode::jmp;
 	s4 offset = 0; // does nothing
-	
+
 	JumpLong() = default;
 	JumpLong(JumpLong const&) = delete;
 	JumpLong(JumpLong&&) = delete;
@@ -82,12 +82,12 @@ packed_struct JumpLong
 	{
 		setDestination(dest);
 	}
-	
+
 	void const* getDestination() const
 	{
 		return reinterpret_cast<void const*>(reinterpret_cast<u4>(this + 1) + offset);
 	}
-	
+
 	void setDestination(void const* dest)
 	{
 		offset = reinterpret_cast<u4>(dest) - (reinterpret_cast<u4>(this + 1));
@@ -110,29 +110,29 @@ packed_struct Optional
 		Instr instr;
 		Nop nop[size];
 	};
-	
+
 	Optional() :
 		nop()
 	{
 	}
-	
+
 	template <typename Arg, typename... Args>
 	Optional(Arg arg, Args... args) :
 		instr(arg, args...)
 	{
 	}
-	
+
 	bool is_enabled() const
 	{
 		return nop[0].opcode != Nop::Opcode::nop;
 	}
-	
+
 	template <typename... Args>
 	void enable(Args... args)
 	{
 		new(&instr) Instr(args...);
 	}
-	
+
 	void disable()
 	{
 		new(&nop) Nop[size];

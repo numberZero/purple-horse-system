@@ -19,7 +19,7 @@ enum Color
 	Magenta	= 0b1101,
 	Cyan		= 0b1011,
 	White		= 0b1111,
-	
+
 	Dark		= Black,
 	DarkGray	= Light + Black,
 	LightGray	= Gray,
@@ -35,9 +35,9 @@ packed_struct Style
 		{
 			Color foreground:4;
 			Color background:4;
-		};	
+		};
 	};
-	
+
 	Style() = default;
 	Style(u1 s): style(s) {}
 	Style(Color fg, Color bg): foreground(fg), background(bg) {}
@@ -48,12 +48,12 @@ packed_struct Style
 packed_union Symbol
 {
 	u2 value;
-	packed_struct 
+	packed_struct
 	{
 		char symbol;
 		u1 style;
 	};
-	
+
 	Symbol() = default;
 	explicit constexpr Symbol(u2 _value): value(_value) {}
 	explicit constexpr Symbol(char _symbol = ' ', u1 _style = 0x70): symbol(_symbol), style(_style) {}
@@ -64,7 +64,7 @@ struct TermPos
 {
 	long x;
 	long y;
-	
+
 	TermPos() = default;
 	TermPos(long _x, long _y): x(_x), y(_y) {}
 };

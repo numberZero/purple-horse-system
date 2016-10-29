@@ -4,13 +4,13 @@
 class KAllocator
 {
 	uintptr_t base_address;
-	
+
 public:
 	KAllocator(void* base) :
 		base_address(reinterpret_cast<uintptr_t>(base))
 	{
 	}
-	
+
 	void* alloc(size_t size, size_t align_bits = 0)
 	{
 		if(align_bits > 16) // > 64 KiB align
@@ -25,7 +25,7 @@ public:
 		base_address = addr + size;
 		return reinterpret_cast<void*>(addr);
 	}
-	
+
 	static KAllocator* allocator;
 };
 

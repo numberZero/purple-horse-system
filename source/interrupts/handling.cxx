@@ -23,7 +23,7 @@ extern "C"
 	void idt_flush(SIDTPointer *);
 	void interrupt_handler(registers_t regs);
 	void irq_handler(registers_t regs);
-	
+
 	extern u1 const irq_handler_wrapper[];
 	extern u1 const interrupt_handler_wrapper[];
 }
@@ -36,7 +36,7 @@ packed_struct SInterruptHandler_WithEC
 		handle(interrupt_handler_wrapper)
 	{
 	}
-	
+
 private:
 	codegen::FlagInterrupt cli;
 	codegen::PushByte pushid;
@@ -54,7 +54,7 @@ packed_struct SInterruptHandler_NoEC
 		handle(interrupt_handler_wrapper)
 	{
 	}
-	
+
 private:
 	codegen::FlagInterrupt cli;
 	codegen::PushByte pushec;
@@ -73,7 +73,7 @@ packed_struct SIRQHandler
 		handle(irq_handler_wrapper)
 	{
 	}
-	
+
 private:
 	codegen::FlagInterrupt cli;
 	codegen::PushByte pushirq;
@@ -108,7 +108,7 @@ void init_idt()
 	{
 		idt[k + 32].Setup(new(undeletable) SIRQHandler(k), 0x0008, RingKernel);
 	}
-	
+
 	idt[0x40].Setup(new(undeletable) SInterruptHandler_NoEC(0x40), 0x0008, RingKernel);
 
 	kout->writeLine("IDT prepared");
