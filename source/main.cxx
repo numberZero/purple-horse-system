@@ -70,7 +70,7 @@ extern "C" int __attribute__((noreturn)) kernel_main(SMultibootInfo *mboot)
 	kout->writeLine("Code pointer: ", getCodePointer());
 	kout->writeLine("Entering interrupt-driven mode...");
 	asm volatile ("sti");
-	while(1)
+	for(;;)
 	{
 		asm volatile ("hlt");
 	}

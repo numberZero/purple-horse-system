@@ -2,14 +2,8 @@
 
 #ifdef __cplusplus
 extern "C"
-{
 #endif
-
 void halt() __attribute__((noreturn));
-
-#ifdef __cplusplus
-}
-#endif
 
 static void _die(char const *text, long N) __attribute__((noreturn));
 static void _die(char const *text, long N)

@@ -50,7 +50,6 @@
 
 		popal
 		addl $8, %esp
-		sti
 		iret
 
 	.global irq_handler_wrapper
@@ -76,5 +75,4 @@
 
 		popal
 		addl $8, %esp
-		sti
 		iret

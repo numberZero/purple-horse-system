@@ -18,6 +18,8 @@ struct bool_constant: integral_constant<bool, _value> {};
 
 namespace codegen
 {
+inline namespace i686
+{
 
 template <typename T>
 struct is_instruction: bool_constant<false> {};
@@ -122,7 +124,7 @@ packed_struct Optional
 	
 	bool is_enabled() const
 	{
-		return nop[0].opcode == Nop::Opcode::nop;
+		return nop[0].opcode != Nop::Opcode::nop;
 	}
 	
 	template <typename... Args>
@@ -137,4 +139,5 @@ packed_struct Optional
 	}
 };
 
+}
 }

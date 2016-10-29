@@ -8,11 +8,13 @@ set(sources
 	main.cxx
 	terminal/terminal.cxx
 	terminal/console.cxx
+	interrupts/handling.cxx
 	memory/kmalloc.cxx
 	desctables.cxx
 )
 
 set(include_dirs
+	.
 	../include
 )
 
