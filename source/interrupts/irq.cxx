@@ -1,6 +1,6 @@
 #include "irq.hxx"
 #include "misc.h"
-#include "port.h"
+#include "hardware/port.h"
 #include "terminal/console.hxx"
 
 CIRQHandlingFacility *irq_handling_facility;

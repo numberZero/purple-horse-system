@@ -1,6 +1,6 @@
 #include "terminal.hxx"
 #include "memory.h"
-#include "port.h"
+#include "hardware/port.h"
 
 void *const KTerminal::Base = (void *)0x000B8000;
 KTerminal *KTerminal::terminal = nullptr;

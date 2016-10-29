@@ -1,4 +1,5 @@
 #pragma once
+#include "misc.h"
 #include "system.hxx"
 
 packed_struct SGDTEntry

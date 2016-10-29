@@ -63,7 +63,7 @@ FUNCTION(memcpy) # void *memcpy(void *dest, const void *src, size_t n);
 	movl 8(%ebp), %edi # %edi = s
 	movl 12(%ebp), %esi # %eax = c
 	movl 16(%ebp), %ecx # %eax = c
-	
+
 	popl %edi
 	popl %esi
 ENDFUNCTION(memcpy)

@@ -1,22 +1,23 @@
 enable_language(ASM)
 
 set(sources
-	boot.S
-	memory.S
-	port.S
-	desctables.S
-	main.cxx
-	terminal/terminal.cxx
-	terminal/console.cxx
+	common/memory.S
+	hardware/boot.S
+	hardware/port.S
 	interrupts/handling.cxx
 	interrupts/helpers.S
 	interrupts/irq.cxx
+	main.cxx
+	memory/helpers.S
+	memory/init.cxx
 	memory/kmalloc.cxx
-	desctables.cxx
+	terminal/terminal.cxx
+	terminal/console.cxx
 )
 
 set(include_dirs
 	.
+	./common
 	../include
 )
 

@@ -1,15 +1,12 @@
 #include "memory.h"
-#include "port.h"
-#include "mboot.hxx"
-#include "desctables.hxx"
+#include "misc.h"
+#include "hardware/mboot.hxx"
 #include "terminal/console.hxx"
-#include "codegen/instructions.hxx"
-#include "memory/kmalloc.hxx"
+// #include "codegen/instructions.hxx"
 #include "interrupts/handling.hxx"
 #include "interrupts/irq.hxx"
-
-extern SGDTEntry gdt[];
-extern void start_timer();
+#include "memory/init.hxx"
+#include "memory/kmalloc.hxx"
 
 extern "C" void __cxa_pure_virtual()
 {
@@ -54,13 +51,13 @@ extern "C" int __attribute__((noreturn)) kernel_main(SMultibootInfo *mboot)
 	{
 		kout->writeLine(mboot->mmap_length);
 	}
-	init_descriptor_tables();
-	for(long i = 0; i < 5; ++i)
+	memory_initialization_facility = new(undeletable) CMemoryInitializationFacility();
+	for(size_t i = 0; i < memory_initialization_facility->entries; ++i)
 	{
-		kout->write("Segment ", i, " flags: ");
-		kout->writeValue(gdt[i].access_byte, 16);
+		kout->write("Segment ", i, " (", 8 * i, ") flags: ");
+		kout->writeValue(memory_initialization_facility->entry(i).access_byte, 16);
 		kout->write(" ");
-		kout->writeValue(gdt[i].granularity_byte, 16);
+		kout->writeValue(memory_initialization_facility->entry(i).granularity_byte, 16);
 		kout->writeLine();
 	}
 	kout->writeLine("Code section: ", &code);

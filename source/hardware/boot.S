@@ -16,7 +16,7 @@
 		.long  MBOOT_HEADER_MAGIC
 		.long  MBOOT_HEADER_FLAGS
 		.long  MBOOT_CHECKSUM
-		
+
 		.long  mboot
 		.long  code
 		.long  data
@@ -50,7 +50,7 @@
 	getStackPointer:
 		movl %esp, %eax
 		ret
-	
+
 	.global getCodePointer
 	getCodePointer:
 		movl (%esp), %eax

@@ -1,13 +1,12 @@
 #include "handling.hxx"
 #include "table.hxx"
-#include "port.h"
+#include "hardware/port.h"
 #include "memory.h"
 #include "misc.h"
 #include "terminal/console.hxx"
 #include "codegen/instructions.hxx"
 #include "memory/kmalloc.hxx"
 #include "irq.hxx"
-#define	IDT_ITEMS	256
 
 CInterruptHandlingFacility *interrupt_handling_facility;
 
@@ -73,8 +72,6 @@ private:
 
 static_assert(sizeof(SIRQHandler) == 10, "Alignment?!");
 
-void initialize_pic();
-
 CInterruptHandlingFacility::CInterruptHandlingFacility()
 {
 	kout->writeLine("Initializing IDT...");
@@ -90,8 +87,8 @@ CInterruptHandlingFacility::CInterruptHandlingFacility()
 			idt[k].Setup(new(undeletable) SInterruptHandler_WithEC(k), 0x0008, RingKernel);
 	for(int k = 14; k != 32; ++k)
 			idt[k].Setup(new(undeletable) SInterruptHandler_NoEC(k), 0x0008, RingKernel);
-	for(int k = 0; k != 16; ++k)
-		idt[k + 32].Setup(new(undeletable) SIRQHandler(k), 0x0008, RingKernel);
+	for(int q = 0; q != 16; ++q)
+		idt[q + 32].Setup(new(undeletable) SIRQHandler(q), 0x0008, RingKernel);
 	idt[0x40].Setup(new(undeletable) SInterruptHandler_NoEC(0x40), 0x0008, RingKernel);
 
 	kout->writeLine("IDT prepared");
