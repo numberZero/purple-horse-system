@@ -10,6 +10,7 @@ set(sources
 	terminal/console.cxx
 	interrupts/handling.cxx
 	interrupts/helpers.S
+	interrupts/irq.cxx
 	memory/kmalloc.cxx
 	desctables.cxx
 )

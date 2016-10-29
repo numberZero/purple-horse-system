@@ -6,24 +6,15 @@
 #include "terminal/console.hxx"
 #include "codegen/instructions.hxx"
 #include "memory/kmalloc.hxx"
+#include "irq.hxx"
 #define	IDT_ITEMS	256
 
 CInterruptHandlingFacility *interrupt_handling_facility;
 
-using interrupt_handler_t = void *;
-
-typedef struct registers
-{
-	u4 ds;                  // Data segment selector
-	u4 edi, esi, ebp, esp, ebx, edx, ecx, eax; // Pushed by pusha.
-	u4 int_no, err_code;    // Interrupt number and error code (if applicable)
-	u4 eip, cs, eflags, useresp, ss; // Pushed by the processor automatically.
-} registers_t;
-
 extern "C"
 {
 	void idt_flush(SIDTPointer *);
-	void interrupt_handler(registers_t regs);
+	void interrupt_handler(SInterruptHandlerArgument &regs);
 	extern u1 const interrupt_handler_wrapper[];
 }
 
@@ -91,65 +82,25 @@ CInterruptHandlingFacility::CInterruptHandlingFacility()
 	idt_ptr.base = idt;
 
 	memset(&idt, 0, sizeof(idt));
-// Interrupt handlers
-	for(int k = 0; k != 32; ++k)
-	{
-		if((k >= 8) && (k <= 13) && (k != 9))
+	for(int k = 0; k != 8; ++k)
+		idt[k].Setup(new(undeletable) SInterruptHandler_NoEC(k), 0x0008, RingKernel);
+	idt[8].Setup(new(undeletable) SInterruptHandler_WithEC(8), 0x0008, RingKernel);
+	idt[9].Setup(new(undeletable) SInterruptHandler_NoEC(9), 0x0008, RingKernel);
+	for(int k = 10; k != 14; ++k)
 			idt[k].Setup(new(undeletable) SInterruptHandler_WithEC(k), 0x0008, RingKernel);
-		else
+	for(int k = 14; k != 32; ++k)
 			idt[k].Setup(new(undeletable) SInterruptHandler_NoEC(k), 0x0008, RingKernel);
-	}
-// IRQ handlers
 	for(int k = 0; k != 16; ++k)
-	{
 		idt[k + 32].Setup(new(undeletable) SIRQHandler(k), 0x0008, RingKernel);
-	}
-
 	idt[0x40].Setup(new(undeletable) SInterruptHandler_NoEC(0x40), 0x0008, RingKernel);
 
 	kout->writeLine("IDT prepared");
-	initialize_pic();
+	irq_handling_facility = new(undeletable) CIRQHandlingFacility();
 	idt_flush(&idt_ptr);
 	kout->writeLine("IDT loaded");
 }
 
-void initialize_pic()
-{
-	kout->writeLine("Initializing PIC...");
-	outb(0x20, 0x11);
-	outb(0xA0, 0x11);
-	outb(0x21, 0x20);
-	outb(0xA1, 0x28);
-	outb(0x21, 0x04);
-	outb(0xA1, 0x02);
-	outb(0x21, 0x01);
-	outb(0xA1, 0x01);
-	outb(0x21, 0x0);
-	outb(0xA1, 0x0);
-	kout->writeLine("PIC initialized");
-}
-
-void start_timer()
-{
-	outb(0x43, 0b00110010);
-	outb(0x40, 0);
-	outb(0x40, 0);
-	u2 divisor = 1193180 / 19;
-
-	// Send the command byte.
-	outb(0x43, 0x36);
-
-	// Divisor has to be sent byte-wise, so split here into upper/lower bytes.
-	u1 l = (u1)(divisor & 0xFF);
-	u1 h = (u1)( (divisor>>8) & 0xFF );
-
-	// Send the frequency divisor.
-	outb(0x40, l);
-	outb(0x40, h);
-	kout->writeLine("Timer started");
-}
-
-void interrupt_handler(registers_t regs)
+void interrupt_handler(SInterruptHandlerArgument &regs)
 {
 	kout->writeLine("Interrupt ", regs.int_no, " received");
 	if((regs.int_no >= 32) && (regs.int_no < 48))

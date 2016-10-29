@@ -22,7 +22,9 @@
 		movw %ax, %fs
 		movw %ax, %gs
 
+		pushl %esp
 		call interrupt_handler
+		addl $4, %esp
 
 		popl %eax
 		movw %ax, %ds

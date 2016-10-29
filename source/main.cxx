@@ -6,6 +6,7 @@
 #include "codegen/instructions.hxx"
 #include "memory/kmalloc.hxx"
 #include "interrupts/handling.hxx"
+#include "interrupts/irq.hxx"
 
 extern SGDTEntry gdt[];
 extern void start_timer();
@@ -72,7 +73,7 @@ extern "C" int __attribute__((noreturn)) kernel_main(SMultibootInfo *mboot)
 	kout->writeLine("Initializing interrupt handling...");
 	interrupt_handling_facility = new(undeletable) CInterruptHandlingFacility();
 	kout->writeLine("Starting system timer...");
-	start_timer();
+	irq_handling_facility->start_timer();
 	kout->writeLine("Entering interrupt-driven mode...");
 	asm volatile ("sti");
 	for(;;)
