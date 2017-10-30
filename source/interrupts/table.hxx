@@ -22,15 +22,19 @@ packed_struct SIDTEntry
 		};
 	};
 	u2 base_high;
+#ifdef X86_64
+	u4 base_uhigh;
+	u4 zero2 = 0;
+#endif
 
 	inline void* GetBase();
-	inline void SetBase(u4 base);
+	inline void SetBase(uintptr_t base);
 	inline void SetBase(void *base);
 	inline void Setup(void *base, u2 s, ERing r);
 	inline void Clear();
 };
 
-static_assert(sizeof(SIDTEntry) == 8, "Unsupported compiler: bit fields must be packed");
+static_assert(sizeof(SIDTEntry) == 2 * sizeof(void *), "Unsupported compiler: bit fields must be packed");
 
 packed_struct SIDTPointer
 {
@@ -38,22 +42,25 @@ packed_struct SIDTPointer
 	SIDTEntry *base;
 };
 
-static_assert(sizeof(SIDTPointer) == 6, "Unsupported compiler: unexpected padding detected");
+static_assert(sizeof(SIDTPointer) == 2 + sizeof(void *), "Unsupported compiler: unexpected padding detected");
 
 void *SIDTEntry::GetBase()
 {
 	return reinterpret_cast<void *>(base_high << 16 | base_low);
 }
 
-void SIDTEntry::SetBase(u4 base)
+void SIDTEntry::SetBase(uintptr_t base)
 {
 	base_low = (base) & 0x0000FFFF;
 	base_high = (base >> 16) & 0x0000FFFF;
+#ifdef X86_64
+	base_uhigh = (base >> 32) & 0xFFFFFFFF;
+#endif
 }
 
 void SIDTEntry::SetBase(void *base)
 {
-	SetBase(reinterpret_cast<u4>(base));
+	SetBase(reinterpret_cast<uintptr_t>(base));
 }
 
 void SIDTEntry::Setup(void *base, u2 s, ERing r)
