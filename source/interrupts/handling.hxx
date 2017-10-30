@@ -9,7 +9,7 @@ packed_struct SCommonRegisters
 
 packed_struct SInterruptRegisters
 {
-	u4 eip, cs, eflags, esp, ss;
+	u4 eip, cs, eflags;
 };
 
 struct SInterruptHandlerArgument

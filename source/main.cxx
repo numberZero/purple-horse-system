@@ -31,7 +31,7 @@ extern "C" int __attribute__((noreturn)) kernel_main(SMultibootInfo *mboot)
 	KConsole con;
 	KConsole::console = &con;
 #endif
-	KAllocator alloc(&end);
+	KAllocator alloc((void *)0x00100000);
 	KAllocator::allocator = &alloc;
 	kout = &con;
  	con.setStyle({LightGreen, Black});
