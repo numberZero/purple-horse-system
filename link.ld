@@ -1,6 +1,4 @@
 ENTRY(start)
-/* STARTUP(boot.S.o) */
-OUTPUT_FORMAT(elf32-i386)
 
 SECTIONS
 {
