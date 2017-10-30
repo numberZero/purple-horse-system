@@ -26,7 +26,7 @@ public:
 	void write(void const* arg)
 	{
 		writeValue("0x");
-		writeValue(reinterpret_cast<u4>(arg), 16, 8);
+		writeValue(reinterpret_cast<uintptr_t>(arg), 16, 8);
 	}
 
 	template <typename T1, typename T2, typename... Args>
