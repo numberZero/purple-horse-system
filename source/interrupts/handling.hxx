@@ -1,16 +1,7 @@
 #pragma once
 #include "types.h"
 #include "table.hxx"
-
-packed_struct SCommonRegisters
-{
-	u4 edi, esi, ebp, esp, ebx, edx, ecx, eax;
-};
-
-packed_struct SInterruptRegisters
-{
-	u4 eip, cs, eflags;
-};
+#include "hardware/types.hxx"
 
 struct SInterruptHandlerArgument
 {
