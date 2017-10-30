@@ -11,6 +11,8 @@ set(sources
 	memory/helpers.S
 	memory/init.cxx
 	memory/kmalloc.cxx
+	multitask/helpers.S
+	multitask/basic.cxx
 	terminal/terminal.cxx
 	terminal/console.cxx
 )

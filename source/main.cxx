@@ -7,6 +7,7 @@
 #include "interrupts/irq.hxx"
 #include "memory/init.hxx"
 #include "memory/kmalloc.hxx"
+#include "multitask/basic.hxx"
 
 extern "C" void __cxa_pure_virtual()
 {
@@ -71,6 +72,7 @@ extern "C" int __attribute__((noreturn)) kernel_main(SMultibootInfo *mboot)
 	interrupt_handling_facility = new(undeletable) CInterruptHandlingFacility();
 	kout->writeLine("Starting system timer...");
 	irq_handling_facility->start_timer();
+	scheduler = new (undeletable) Scheduler();
 	kout->writeLine("Entering interrupt-driven mode...");
 	asm volatile ("sti");
 	for(;;)
