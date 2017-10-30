@@ -22,6 +22,23 @@ extern "C" u1 end;
 extern "C" void *getStackPointer();
 extern "C" void *getCodePointer();
 
+int counter = 0;
+static char const tmpl[] = "=== Task ___ ===";
+
+void test1(void *text)
+{
+	for (int k = 0; k != 50; ++k) {
+		kout->writeLine((char const *)text);
+	}
+	char *buf = reinterpret_cast<char *>(KAllocator::allocator->alloc(sizeof(tmpl)));
+	memcpy(buf, tmpl, sizeof(tmpl));
+	buf[11] = '0' + (counter % 10);
+	buf[10] = '0' + (counter / 10 % 10);
+	buf[9] = '0' + (counter / 100 % 10);
+	++counter;
+	Scheduler::scheduler->create_task(test1, buf);
+}
+
 extern "C" int __attribute__((noreturn)) kernel_main(SMultibootInfo *mboot)
 {
 #ifdef VIDEO_STACK
@@ -72,7 +89,12 @@ extern "C" int __attribute__((noreturn)) kernel_main(SMultibootInfo *mboot)
 	interrupt_handling_facility = new(undeletable) CInterruptHandlingFacility();
 	kout->writeLine("Starting system timer...");
 	irq_handling_facility->start_timer();
-	scheduler = new (undeletable) Scheduler();
+	kout->writeLine("Starting threading facility...");
+	Scheduler::scheduler = new(undeletable) Scheduler();
+	kout->writeLine("Starting some threads...");
+	Scheduler::scheduler->create_task(test1, (void *)"=== Task 1 === Hello, world!");
+	Scheduler::scheduler->create_task(test1, (void *)"=== Task 2 === Welcome to the Userspace!");
+	Scheduler::scheduler->create_task(test1, (void *)"=== Task 3 === At ring 0 :P");
 	kout->writeLine("Entering interrupt-driven mode...");
 	asm volatile ("sti");
 	for(;;)

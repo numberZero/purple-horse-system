@@ -105,10 +105,11 @@ void CInterruptHandlingFacility::handle_interrupt(int id, u4 error, u2& data_seg
 
 void interrupt_handler(SInterruptHandlerArgument &regs)
 {
-	scheduler->save_current(regs.context, regs.registers);
+	regs.registers.esp += 8;
+	Scheduler::scheduler->save_current(regs.context, regs.registers);
 	if((regs.int_no >= 32) && (regs.int_no < 48))
 		irq_handling_facility->handle_irq(regs.err_code, regs.ds, regs.registers, regs.context);
 	else
 		interrupt_handling_facility->handle_interrupt(regs.int_no, regs.err_code, regs.ds, regs.registers, regs.context);
-	scheduler->schedule_next();
+	Scheduler::scheduler->schedule_next();
 }

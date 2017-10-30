@@ -26,3 +26,10 @@
 		movl 28(%eax), %eax
 
 		iret
+
+	.global task_wrapper
+	task_wrapper:
+		pushl %eax
+		pushl %edx
+		call task_wrapper_2
+		jmp halt

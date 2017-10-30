@@ -14,6 +14,7 @@ struct Task {
 };
 
 struct Scheduler {
+	static Scheduler *scheduler;
 	Task *tasks;
 	Task *current;
 
@@ -21,6 +22,7 @@ struct Scheduler {
 
 	void save_current(SInterruptRegisters const &, SCommonRegisters const &);
 	void schedule_next();
-};
 
-extern Scheduler *scheduler;
+	void create_task(void (*fn)(void *arg), void *arg);
+	void delete_current_task();
+};
