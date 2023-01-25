@@ -44,6 +44,7 @@ SECTIONS
 	.heap :
 	{
 		heap = .; _heap = .; __heap = .;
+		. = . + 0x100000;
 	}
 
 	. = ALIGN(4096);

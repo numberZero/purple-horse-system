@@ -14,11 +14,11 @@ extern "C" void __cxa_pure_virtual()
 	die("Pure virtual function call");
 }
 
-extern "C" u1 code;
-extern "C" u1 data;
-extern "C" u1 bss;
-extern "C" u1 heap;
-extern "C" u1 end;
+extern "C" u1 code[];
+extern "C" u1 data[];
+extern "C" u1 bss[];
+extern "C" u1 heap[];
+extern "C" u1 end[];
 extern "C" void *getStackPointer();
 extern "C" void *getCodePointer();
 
@@ -49,7 +49,7 @@ extern "C" int __attribute__((noreturn)) kernel_main(SMultibootInfo *mboot)
 	KConsole con;
 	KConsole::console = &con;
 #endif
-	KAllocator alloc((void *)0x00100000);
+	KAllocator alloc(&heap);
 	KAllocator::allocator = &alloc;
 	kout = &con;
  	con.setStyle({LightGreen, Black});
