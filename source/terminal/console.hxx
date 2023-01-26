@@ -9,9 +9,9 @@ public:
 	virtual void setStyle(Style style) = 0;
 	virtual void writeChar(char ch) = 0;
 	virtual void writeValue(char const *string) = 0;
-	virtual void writeValue(long number, int base = 10, int width = 1) = 0;
+	virtual void writeValue(long number, int base = 10, int width = 1);
 	virtual void writeLine() = 0;
-	virtual void writeLine(char const *string) = 0;
+	virtual void writeLine(char const *string);
 
 	void write(char const* string)
 	{
@@ -84,9 +84,7 @@ public:
 	void setStyle(Style style) override;
 	void writeChar(char ch) override;
 	void writeValue(char const *string) override;
-	void writeValue(long number, int base = 10, int width = 0) override;
 	void writeLine() override;
-	void writeLine(char const *string) override;
 };
 
 class KConsole: public Console

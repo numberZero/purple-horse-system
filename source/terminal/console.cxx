@@ -150,7 +150,7 @@ void Console::writeValue(char const *string)
 	putStringEx(string, style);
 }
 
-void Console::writeValue(long number, int base, int full_width)
+void IConsole::writeValue(long number, int base, int full_width)
 {
 	static const char digits[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 	if((base < 2) || (base >= static_cast<int>(sizeof(digits))))
@@ -199,7 +199,7 @@ void Console::writeLine()
 	skipLine();
 }
 
-void Console::writeLine(char const *string)
+void IConsole::writeLine(char const *string)
 {
 	writeValue(string);
 	writeLine();
