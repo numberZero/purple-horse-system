@@ -42,6 +42,16 @@ public:
 		write(args...);
 		writeLine();
 	}
+
+	template <typename... Args>
+	void writeLine(Style style, Args... args)
+	{
+		Style old_style = getStyle();
+		setStyle(style);
+		write(args...);
+		writeLine();
+		setStyle(old_style);
+	}
 };
 
 class Console: virtual public IConsole, virtual public ITerminal
