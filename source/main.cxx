@@ -56,18 +56,22 @@ extern "C" int __attribute__((noreturn)) kernel_main(SMultibootInfo *mboot)
 	con.clearEx(' ', Style(Color::LightBlue, Color::Black));
 	kout->writeLine("Console enabled");
 	kout->writeLine("Kernel allocator enabled");
-	kout->writeLine("Multiboot: ", mboot);
-	kout->write("Multiboot flags: ");
-	kout->writeValue(mboot->flags, 2);
-	kout->writeLine();
-	if(mboot->flag.memory_info)
-	{
-		kout->writeLine("Lower memory: ", mboot->mem_lower);
-		kout->writeLine("Upper memory: ", mboot->mem_upper);
-	}
-	if(mboot->flag.memory_map)
-	{
-		kout->writeLine(mboot->mmap_length);
+	if (mboot) {
+		kout->writeLine("Multiboot: ", mboot);
+		kout->write("Multiboot flags: ");
+		kout->writeValue(mboot->flags, 2);
+		kout->writeLine();
+		if(mboot->flag.memory_info)
+		{
+			kout->writeLine("Lower memory: ", mboot->mem_lower);
+			kout->writeLine("Upper memory: ", mboot->mem_upper);
+		}
+		if(mboot->flag.memory_map)
+		{
+			kout->writeLine(mboot->mmap_length);
+		}
+	} else {
+		kout->writeLine({Yellow, Black}, "Got no Multiboot data");
 	}
 	memory_initialization_facility = new(undeletable) CMemoryInitializationFacility();
 	for(size_t i = 0; i < memory_initialization_facility->entries; ++i)
