@@ -54,7 +54,7 @@ extern "C" int __attribute__((noreturn)) kernel_main(SMultibootInfo *mboot)
 #endif
 	KAllocator alloc(&heap);
 	KAllocator::allocator = &alloc;
-	kout = &scon;
+	kout = &con;
  	con.setStyle({LightGreen, Black});
 	con.clearEx(' ', Style(Color::LightBlue, Color::Black));
 	kout->writeLine("Console enabled");
