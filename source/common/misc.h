@@ -8,6 +8,7 @@ void halt() __attribute__((noreturn));
 static inline void _die(char const *text, long N) __attribute__((noreturn));
 static inline void _die(char const *text, long N)
 {
+	asm volatile ("cli");
 	struct t
 	{
 		char c;
@@ -16,11 +17,11 @@ static inline void _die(char const *text, long N)
 	for(long i = 0; i < N; ++i)
 	{
 		buf[i].c = text[i];
-		buf[i].s = 0x0C;
+		buf[i].s = 0xCF;
 	}
 	halt();
 }
-#define	die(message)	_die(message, sizeof(message))
+#define	die(message)	_die(message, sizeof(message) - 1)
 
 template <typename T>
 static inline T const& EnsureRange(T const& value, T const& min, T const& max)
