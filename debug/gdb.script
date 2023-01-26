@@ -1,2 +1,2 @@
-file build/source/kernel
+file source/kernel
 target remote :1234

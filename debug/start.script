@@ -1,3 +1,2 @@
 mydir=$(dirname "$0")
-cd "$mydir/.."
-qemu-system-i386 -kernel build/source/kernel -name "Purple Horse (debug)" -s -S
+qemu-system-i386 -kernel source/kernel -name "Purple Horse (debug)" -s -S
