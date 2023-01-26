@@ -30,6 +30,7 @@ void test1(void *text)
 {
 	for (int k = 0; k != 50; ++k) {
 		kout->writeLine((char const *)text);
+		sleep();
 	}
 	char *buf = reinterpret_cast<char *>(KAllocator::allocator->alloc(sizeof(tmpl)));
 	memcpy(buf, tmpl, sizeof(tmpl));

@@ -35,3 +35,7 @@ static inline T const& EnsureRange(T const& value, T const& min, T const& max)
 static inline void delay() {
 	asm ("pause");
 }
+
+static inline void sleep() {
+	asm ("hlt");
+}
