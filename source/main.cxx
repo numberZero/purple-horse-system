@@ -8,6 +8,7 @@
 #include "memory/init.hxx"
 #include "memory/kmalloc.hxx"
 #include "multitask/basic.hxx"
+#include "terminal/serial.hxx"
 
 extern "C" void __cxa_pure_virtual()
 {
@@ -48,10 +49,11 @@ extern "C" int __attribute__((noreturn)) kernel_main(SMultibootInfo *mboot)
 	KTerminal::terminal = &term; // yes term is local, but actually kernel_main never returns, so that’s OK
 	KConsole con;
 	KConsole::console = &con;
+	SerialConsole scon{0x3F8};
 #endif
 	KAllocator alloc(&heap);
 	KAllocator::allocator = &alloc;
-	kout = &con;
+	kout = &scon;
  	con.setStyle({LightGreen, Black});
 	con.clearEx(' ', Style(Color::LightBlue, Color::Black));
 	kout->writeLine("Console enabled");

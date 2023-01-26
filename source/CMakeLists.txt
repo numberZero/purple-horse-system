@@ -15,6 +15,7 @@ set(sources
 	multitask/basic.cxx
 	terminal/terminal.cxx
 	terminal/console.cxx
+	terminal/serial.cxx
 )
 
 set(include_dirs
