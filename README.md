@@ -2,6 +2,8 @@
 *Why horse? Why purple? Don’t even ask.*
 
 A sample program to demonstrate how an OS kernel works internally.
+![A screenshot (QEMU)](screenshot.png)
+
 Currently supports:
 
  * Text output on a VGA console
